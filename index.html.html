@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Refluksiruoat – mikä sopii ja mikä ei</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #f3f6f5;
+  --surface: #ffffff;
+  --text: #14211c;
+  --muted: #55655d;
+  --border: #d9e2de;
+  --accent: #0f5c55;
+  --accent-text: #ffffff;
+  --good: #1b7a45;
+  --good-bg: #e1f3e8;
+  --warn: #9a6200;
+  --warn-bg: #fdf0d2;
+  --bad: #b3261e;
+  --bad-bg: #fbe3e0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1614;
+    --surface: #17221f;
+    --text: #e7efec;
+    --muted: #9db0a8;
+    --border: #2a3a35;
+    --accent: #5fc3b6;
+    --accent-text: #08201c;
+    --good: #6fd196;
+    --good-bg: #17352358;
+    --warn: #f0be5a;
+    --warn-bg: #3a2d0f;
+    --bad: #ff8d84;
+    --bad-bg: #3d1a17;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1614;
+  --surface: #17221f;
+  --text: #e7efec;
+  --muted: #9db0a8;
+  --border: #2a3a35;
+  --accent: #5fc3b6;
+  --accent-text: #08201c;
+  --good: #6fd196;
+  --good-bg: #17352358;
+  --warn: #f0be5a;
+  --warn-bg: #3a2d0f;
+  --bad: #ff8d84;
+  --bad-bg: #3d1a17;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
+h1 { font-size: 1.9rem; line-height: 1.15; margin: 8px 0 8px; letter-spacing: -0.01em; }
+.lead { color: var(--muted); margin: 0 0 20px; }
+
+.search {
+  width: 100%;
+  font: inherit;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+.search:focus-visible, .chip:focus-visible, .rate:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.row { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0 4px; scrollbar-width: none; }
+.row::-webkit-scrollbar { display: none; }
+.chip, .rate {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.rate[aria-pressed="true"] { border-width: 2px; font-weight: 700; }
+.rate[data-r="sopii"][aria-pressed="true"] { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+.rate[data-r="varovasti"][aria-pressed="true"] { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.rate[data-r="vältä"][aria-pressed="true"] { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+
+.count { color: var(--muted); font-size: 0.9rem; margin: 16px 0 8px; }
+
+ul.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.item {
+  display: grid;
+  grid-template-columns: 6px 1fr auto;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.band { background: var(--c); }
+.body { padding: 12px 14px; }
+.name { font-weight: 700; }
+.note { color: var(--muted); font-size: 0.93rem; margin-top: 2px; }
+.cat { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+.badge {
+  align-self: center;
+  margin-right: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: var(--bg-c);
+  color: var(--c);
+}
+.sopii { --c: var(--good); --bg-c: var(--good-bg); }
+.varovasti { --c: var(--warn); --bg-c: var(--warn-bg); }
+.vältä { --c: var(--bad); --bg-c: var(--bad-bg); }
+
+.empty { padding: 28px 8px; text-align: center; color: var(--muted); }
+
+details {
+  margin-top: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 14px;
+}
+summary { cursor: pointer; font-weight: 700; padding: 12px 0; }
+details p, details li { color: var(--muted); font-size: 0.95rem; }
+details ul { padding-left: 20px; margin: 0 0 12px; }
+.disclaimer {
+  margin-top: 28px;
+  padding: 14px;
+  border-left: 4px solid var(--warn);
+  background: var(--warn-bg);
+  color: var(--text);
+  border-radius: 0 10px 10px 0;
+  font-size: 0.93rem;
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Refluksiruoat</h1>
+  <p class="lead">Hae ruoka tai juoma ja katso, sopiiko se närästykseen ja refluksiin.</p>
+
+  <label for="q" style="position:absolute;left:-9999px">Hae ruokaa</label>
+  <input id="q" class="search" type="search" placeholder="Hae esim. kahvi, banaani, juusto" autocomplete="off">
+
+  <div class="row" id="cats" role="group" aria-label="Kategoriat"></div>
+  <div class="row" id="rates" role="group" aria-label="Sopivuus"></div>
+
+  <p class="count" id="count" aria-live="polite"></p>
+  <ul class="list" id="list"></ul>
+  <div class="empty" id="empty" hidden>Ei tuloksia. Kokeile toista hakusanaa tai poista suodattimet.</div>
+
+  <details>
+    <summary>Muutama perusohje</summary>
+    <ul>
+      <li>Syö useita pieniä aterioita yhden ison sijaan.</li>
+      <li>Jätä 2–3 tuntia ruokailun ja nukkumaan menon väliin.</li>
+      <li>Nosta sängyn pääty hieman koholle.</li>
+      <li>Tupakointi ja alkoholi pahentavat oireita.</li>
+      <li>Ylipainon pudottaminen helpottaa usein oireita.</li>
+      <li>Pidä ruokapäiväkirjaa: triggerit ovat yksilöllisiä.</li>
+    </ul>
+  </details>
+
+  <div class="disclaimer">
+    Tämä sivu on yleinen opas, ei lääketieteellistä neuvontaa. Luokitukset ovat suuntaa antavia ja sinulle sopivat ruoat voivat poiketa niistä. Hakeudu lääkäriin, jos oireet toistuvat, nielemisessä on vaikeuksia, laihdut tahattomasti tai oksennat pitkään. Rintakivussa soita hätänumeroon 112.
+  </div>
+</main>
+
+<script>
+var CATS = [
+  ["mausteet", "Mausteet ja kastikkeet"],
+  ["makeiset", "Makeiset"],
+  ["ruoanvalmistus", "Ruoanvalmistusaineet"],
+  ["maitotuotteet", "Maitotuotteet"],
+  ["juomat", "Juomat"],
+  ["hedelmat", "Hedelmät ja vihannekset"],
+  ["vilja", "Viljatuotteet"],
+  ["liha", "Liha ja lihankorvikkeet"],
+  ["pahkinat", "Pähkinät ja siemenet"]
+];
+
+// [nimi, kategoria, sopivuus (sopii / varovasti / vältä), lyhyt huomio]
+var FOODS = [
+  // Mausteet ja kastikkeet
+  ["Ketsuppi", "mausteet", "vältä", "Tomaatti ja etikka ovat happamia."],
+  ["Sinappi", "mausteet", "varovasti", "Voi ärsyttää herkkää ruokatorvea."],
+  ["Majoneesi", "mausteet", "varovasti", "Rasvainen, pieni määrä yleensä käy."],
+  ["Chili ja cayennepippuri", "mausteet", "vältä", "Voimakkaan tulinen ärsyttää."],
+  ["Valkosipuli", "mausteet", "varovasti", "Yleinen laukaisija, vaihtelee henkilöittäin."],
+  ["Tuoreet yrtit (basilika, persilja, tilli)", "mausteet", "sopii", "Maustavat ilman happamuutta tai tulisuutta."],
+  ["Etikka", "mausteet", "vältä", "Hapan."],
+  ["Soijakastike", "mausteet", "varovasti", "Suolainen, käytä kohtuudella."],
+
+  // Makeiset
+  ["Suklaa", "makeiset", "vältä", "Rentouttaa ruokatorven alaosan sulkijalihasta."],
+  ["Minttukarkit ja piparminttu", "makeiset", "vältä", "Mintut voivat lisätä takaisinvirtausta."],
+  ["Hunaja", "makeiset", "sopii", "Sopii useimmille kohtuudella."],
+  ["Vaahtokarkit", "makeiset", "sopii", "Rasvattomia, mutta sokeria."],
+  ["Hyytelökarkit", "makeiset", "sopii", "Yleensä hyvin siedettyjä."],
+  ["Hapankarkit", "makeiset", "vältä", "Happamia."],
+
+  // Ruoanvalmistusaineet
+  ["Oliiviöljy", "ruoanvalmistus", "sopii", "Käytä kohtuudella."],
+  ["Rypsiöljy", "ruoanvalmistus", "sopii", "Kevyt vaihtoehto paistamiseen."],
+  ["Voi", "ruoanvalmistus", "varovasti", "Rasvaa, pieni määrä käy."],
+  ["Friteerausrasva", "ruoanvalmistus", "vältä", "Hidastaa mahalaukun tyhjenemistä."],
+  ["Kananmunan valkuainen", "ruoanvalmistus", "sopii", "Rasvaton proteiinilähde."],
+  ["Kananmunan keltuainen", "ruoanvalmistus", "varovasti", "Rasvainen."],
+  ["Tomaattipyree ja -kastike", "ruoanvalmistus", "vältä", "Hapan."],
+  ["Kookosmaito", "ruoanvalmistus", "varovasti", "Runsasrasvainen."],
+
+  // Maitotuotteet
+  ["Rasvaton maito", "maitotuotteet", "sopii", "Vähärasvainen vaihtoehto."],
+  ["Täysmaito", "maitotuotteet", "varovasti", "Rasva voi pahentaa oireita."],
+  ["Kaura- ja mantelijuoma", "maitotuotteet", "sopii", "Usein hyvin siedetty."],
+  ["Rasvaton jogurtti ja rahka", "maitotuotteet", "sopii", "Valitse vähärasvainen ja mausteeton."],
+  ["Raejuusto", "maitotuotteet", "sopii", "Vähärasvainen juusto."],
+  ["Rasvaiset juustot", "maitotuotteet", "vältä", "Runsas rasva."],
+  ["Kerma", "maitotuotteet", "vältä", "Hyvin rasvainen."],
+  ["Jäätelö", "maitotuotteet", "varovasti", "Rasvaa ja sokeria, mutta kylmä voi tuntua helpottavalta."],
+
+  // Juomat
+  ["Vesi", "juomat", "sopii", "Paras valinta janoon."],
+  ["Yrttitee (kamomilla, fenkoli)", "juomat", "sopii", "Kofeiiniton ja lempeä."],
+  ["Kahvi", "juomat", "vältä", "Kofeiini ja happamuus."],
+  ["Musta tee", "juomat", "varovasti", "Sisältää kofeiinia."],
+  ["Piparminttutee", "juomat", "varovasti", "Mintut voivat lisätä oireita."],
+  ["Appelsiini- ja greippimehu", "juomat", "vältä", "Hapan."],
+  ["Hiilihapolliset juomat", "juomat", "vältä", "Kupla paisuttaa mahaa ja työntää happoa ylös."],
+  ["Alkoholi", "juomat", "vältä", "Rentouttaa sulkijalihasta ja lisää hapontuotantoa."],
+
+  // Hedelmät ja vihannekset
+  ["Banaani", "hedelmat", "sopii", "Lempeä ja vähähappoinen."],
+  ["Meloni", "hedelmat", "sopii", "Vähähappoinen."],
+  ["Omena", "hedelmat", "sopii", "Yleensä käy, makea lajike lempeämpi."],
+  ["Appelsiini ja muut sitrushedelmät", "hedelmat", "vältä", "Hapan."],
+  ["Ananas", "hedelmat", "varovasti", "Melko hapan."],
+  ["Tomaatti", "hedelmat", "vältä", "Hapan."],
+  ["Sipuli", "hedelmat", "vältä", "Yleinen laukaisija, raakana erityisesti."],
+  ["Keitetty peruna", "hedelmat", "sopii", "Lempeä, vältä voita ja rasvaa."],
+  ["Parsakaali", "hedelmat", "sopii", "Vähärasvainen ja vähähappoinen."],
+  ["Porkkana", "hedelmat", "sopii", "Käy yleensä hyvin."],
+  ["Kurkku", "hedelmat", "sopii", "Viilentävä ja lempeä."],
+  ["Lehtivihannekset", "hedelmat", "sopii", "Salaatti, pinaatti ja vastaavat."],
+  ["Paprika", "hedelmat", "varovasti", "Joillekin laukaisija."],
+  ["Avokado", "hedelmat", "varovasti", "Rasvainen, pieni annos käy."],
+
+  // Viljatuotteet
+  ["Kaurahiutaleet ja kaurapuuro", "vilja", "sopii", "Imevät happoa, hyvä aamupala."],
+  ["Täysjyväleipä", "vilja", "sopii", "Kuitu auttaa."],
+  ["Riisi", "vilja", "sopii", "Lempeä lisäke."],
+  ["Pasta (tomaatittomalla kastikkeella)", "vilja", "sopii", "Kastike ratkaisee."],
+  ["Croissant ja voitaikina", "vilja", "vältä", "Runsaasti rasvaa."],
+  ["Pizza", "vilja", "vältä", "Tomaatti, juusto ja rasva."],
+  ["Perunalastut", "vilja", "vältä", "Rasvaiset ja suolaiset."],
+
+  // Liha ja lihankorvikkeet
+  ["Kana (ihoton, uunissa tai grillattu)", "liha", "sopii", "Vähärasvainen."],
+  ["Kalkkuna", "liha", "sopii", "Vähärasvainen."],
+  ["Vähärasvainen kala (kuha, turska)", "liha", "sopii", "Kevyt proteiinilähde."],
+  ["Lohi ja muu rasvainen kala", "liha", "varovasti", "Rasvaa, mutta hyviä rasvoja."],
+  ["Makkara", "liha", "vältä", "Rasvainen ja usein maustettu."],
+  ["Pekoni", "liha", "vältä", "Hyvin rasvaista."],
+  ["Rasvainen jauheliha", "liha", "vältä", "Valitse vähärasvainen (alle 10 %)."],
+  ["Paistettu tai friteerattu liha", "liha", "vältä", "Rasva hidastaa mahan tyhjenemistä."],
+  ["Tofu", "liha", "sopii", "Vähärasvainen kasvisproteiini."],
+  ["Pavut ja linssit", "liha", "varovasti", "Voivat aiheuttaa kaasua ja paineen tunnetta."],
+
+  // Pähkinät ja siemenet
+  ["Manteli", "pahkinat", "sopii", "Kourallinen kerrallaan."],
+  ["Saksanpähkinä", "pahkinat", "varovasti", "Rasvainen."],
+  ["Maapähkinä ja maapähkinävoi", "pahkinat", "varovasti", "Rasvainen, osalle ok."],
+  ["Auringonkukansiemenet", "pahkinat", "sopii", "Kohtuudella."],
+  ["Pellavansiemen ja chia", "pahkinat", "sopii", "Kuitua, liota ennen käyttöä."]
+];
+
+var RATES = [["sopii", "Sopii"], ["varovasti", "Varovasti"], ["vältä", "Vältä"]];
+var catLabel = {};
+CATS.forEach(function (c) { catLabel[c[0]] = c[1]; });
+
+var state = { q: "", cat: null, rate: null };
+var $q = document.getElementById("q");
+var $cats = document.getElementById("cats");
+var $rates = document.getElementById("rates");
+var $list = document.getElementById("list");
+var $count = document.getElementById("count");
+var $empty = document.getElementById("empty");
+
+function makeButton(cls, label, pressed, onClick, rateKey) {
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = cls;
+  b.textContent = label;
+  b.setAttribute("aria-pressed", pressed ? "true" : "false");
+  if (rateKey) b.setAttribute("data-r", rateKey);
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function renderFilters() {
+  $cats.textContent = "";
+  $cats.appendChild(makeButton("chip", "Kaikki", state.cat === null, function () { state.cat = null; update(); }));
+  CATS.forEach(function (c) {
+    $cats.appendChild(makeButton("chip", c[1], state.cat === c[0], function () {
+      state.cat = state.cat === c[0] ? null : c[0]; update();
+    }));
+  });
+  $rates.textContent = "";
+  RATES.forEach(function (r) {
+    $rates.appendChild(makeButton("rate", r[1], state.rate === r[0], function () {
+      state.rate = state.rate === r[0] ? null : r[0]; update();
+    }, r[0]));
+  });
+}
+
+function renderList() {
+  var q = state.q.trim().toLowerCase();
+  var rows = FOODS.filter(function (f) {
+    if (state.cat && f[1] !== state.cat) return false;
+    if (state.rate && f[2] !== state.rate) return false;
+    if (q && (f[0] + " " + f[3]).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  $list.textContent = "";
+  rows.forEach(function (f) {
+    var li = document.createElement("li");
+    li.className = "item " + f[2];
+
+    var band = document.createElement("div");
+    band.className = "band";
+
+    var body = document.createElement("div");
+    body.className = "body";
+    var n = document.createElement("div"); n.className = "name"; n.textContent = f[0];
+    var d = document.createElement("div"); d.className = "note"; d.textContent = f[3];
+    var c = document.createElement("div"); c.className = "cat"; c.textContent = catLabel[f[1]];
+    body.appendChild(n); body.appendChild(d); body.appendChild(c);
+
+    var badge = document.createElement("div");
+    badge.className = "badge";
+    badge.textContent = f[2].charAt(0).toUpperCase() + f[2].slice(1);
+
+    li.appendChild(band); li.appendChild(body); li.appendChild(badge);
+    $list.appendChild(li);
+  });
+  $count.textContent = rows.length + (rows.length === 1 ? " tulos" : " tulosta");
+  $empty.hidden = rows.length !== 0;
+}
+
+function update() { renderFilters(); renderList(); }
+
+$q.addEventListener("input", function () { state.q = $q.value; renderList(); });
+update();
+</script>
+</body>
+</html>
